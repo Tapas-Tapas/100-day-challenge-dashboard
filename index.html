@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 Challenge Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for a nicer look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div>
+                <h1>100 Day Challenge</h1>
+                <p id="challenge-progress">Track your progress and build a new habit!</p>
+            </div>
+            <div class="year-countdown">
+                <span id="days-left-in-year">--</span>
+                <p>Days Left in 2025</p>
+            </div>
+        </header>
+
+        <main class="challenge-grid" id="challenge-grid">
+            <!-- Day cards will be dynamically inserted here by JavaScript -->
+        </main>
+    </div>
+
+    <!-- The Modal for Daily Notes -->
+    <div id="notes-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title">Day X</h2>
+            <p>What did you accomplish today?</p>
+            <textarea id="modal-notes" placeholder="e.g., 'Completed a 30-minute workout and read 10 pages.'"></textarea>
+            <div class="modal-actions">
+                <button id="modal-close-btn">Close</button>
+                <button id="modal-save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
