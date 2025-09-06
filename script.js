@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- DOM Elements ---
+    const challengeTitleEl = document.getElementById('challenge-title'); // New element
     const daysLeftEl = document.getElementById('days-left-in-year');
     const challengeGrid = document.getElementById('challenge-grid');
     const progressText = document.getElementById('challenge-progress');
@@ -10,47 +12,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalCloseBtn = document.getElementById('modal-close-btn');
 
     const TOTAL_DAYS = 100;
-    let challengeState = [];
+    let appState = {}; // Use an object to store all state
     let currentlyEditingDay = null;
 
-    // =======================================================
-    // == LOCALSTORAGE FUNCTIONS TO SAVE AND LOAD PROGRESS ===
-    // =======================================================
-
+    // --- State Management (localStorage) ---
     function saveState() {
-        // Convert the challengeState array to a string and save it.
-        localStorage.setItem('challengeState', JSON.stringify(challengeState));
+        // Now we save the entire appState object, including the title
+        appState.challengeTitle = challengeTitleEl.textContent;
+        localStorage.setItem('appState', JSON.stringify(appState));
     }
 
     function loadState() {
-        // Try to get the saved data from localStorage.
-        const savedState = localStorage.getItem('challengeState');
+        const savedState = localStorage.getItem('appState');
         if (savedState) {
-            // If data exists, parse it back into an array.
-            return JSON.parse(savedState);
+            appState = JSON.parse(savedState);
+        } else {
+            // Default state if nothing is saved
+            appState = {
+                challengeTitle: "100 Day Challenge",
+                days: Array.from({ length: TOTAL_DAYS }, (_, i) => ({
+                    day: i + 1,
+                    completed: false,
+                    notes: ''
+                }))
+            };
         }
-        // If no data exists (first visit), create a default array.
-        return Array.from({ length: TOTAL_DAYS }, (_, i) => ({
-            day: i + 1,
-            completed: false,
-            notes: ''
-        }));
+        challengeTitleEl.textContent = appState.challengeTitle;
     }
 
-    // --- Main App Initialization ---
+    // --- Initialization ---
     function initializeApp() {
-        // === LOAD STATE on startup ===
-        challengeState = loadState();
-
+        loadState();
         updateDaysLeftInYear();
         renderChallengeGrid();
         updateProgressHeader();
+        
+        // Add listener to save title when user clicks away
+        challengeTitleEl.addEventListener('blur', saveState);
+
         setInterval(updateDaysLeftInYear, 60000);
     }
 
+    // --- UI Rendering ---
     function renderChallengeGrid() {
         challengeGrid.innerHTML = '';
-        challengeState.forEach(dayData => {
+        appState.days.forEach(dayData => {
             const card = document.createElement('div');
             card.className = 'day-card';
             card.dataset.day = dayData.day;
@@ -75,12 +81,13 @@ document.addEventListener('DOMContentLoaded', () => {
             challengeGrid.appendChild(card);
         });
     }
-    
+
     function updateProgressHeader() {
-        const completedCount = challengeState.filter(day => day.completed).length;
+        const completedCount = appState.days.filter(day => day.completed).length;
         progressText.textContent = `You have completed ${completedCount} out of ${TOTAL_DAYS} days. Keep going!`;
     }
 
+    // --- Countdown Logic ---
     function updateDaysLeftInYear() {
         const now = new Date();
         const endOfYear = new Date(now.getFullYear(), 11, 31);
@@ -89,11 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
         daysLeftEl.textContent = diffInDays;
     }
 
+    // --- Event Handlers ---
     function handleDayCompletion(dayNumber, isCompleted) {
-        const dayData = challengeState.find(d => d.day === dayNumber);
+        const dayData = appState.days.find(d => d.day === dayNumber);
         if (dayData) {
             dayData.completed = isCompleted;
-            // === SAVE STATE after a change ===
             saveState();
             renderChallengeGrid();
             updateProgressHeader();
@@ -102,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openNotesModal(dayNumber) {
         currentlyEditingDay = dayNumber;
-        const dayData = challengeState.find(d => d.day === dayNumber);
+        const dayData = appState.days.find(d => d.day === dayNumber);
         modalTitle.textContent = `Notes for Day ${dayNumber}`;
         modalNotes.value = dayData.notes || '';
         modal.style.display = 'flex';
@@ -115,19 +122,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveNotes() {
         if (currentlyEditingDay) {
-            const dayData = challengeState.find(d => d.day === currentlyEditingDay);
+            const dayData = appState.days.find(d => d.day === currentlyEditingDay);
             dayData.notes = modalNotes.value;
-            // === SAVE STATE after a change ===
             saveState();
             closeNotesModal();
         }
     }
 
+    // --- Modal Event Listeners ---
     modalSaveBtn.addEventListener('click', saveNotes);
     modalCloseBtn.addEventListener('click', closeNotesModal);
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeNotesModal();
     });
 
+    // --- Start the App ---
     initializeApp();
 });
